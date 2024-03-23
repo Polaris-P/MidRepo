@@ -36,6 +36,14 @@ jobs:
       - name: Setup Debug Session
         uses: csexton/debugger-action@master
 
+      - name: 编译
+        run: |
+          ls
+          cd ./openwrt
+          ls
+          make download -j8
+          make V=s -j10
+
       - name: 复制更新后的文件
         run: |
           ls
