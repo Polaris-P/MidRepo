@@ -7,5 +7,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: 克隆镜像
+        run: |
+          git clone 	git://git.openwrt.org/openwrt/openwrt.git
+      - name: 环境准备
+        run: |
+          #sudo rm -rf /usr/share/dotnet /etc/mysql /etc/apt/sources.list.d /usr/local/lib/android /opt/ghc
+          #sudo -E apt-get -y purge ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* php* android*
+          sudo -E apt-get update
+          sudo apt-get install subversion g++ zlib1g-dev build-essential git \
+          python3 python3-distutils libncurses5-dev gawk gettext unzip \
+          file libssl-dev wget libelf-dev ecj fastjar java-propose-classpath
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          df -h
+
+      - name: 获取软件包配置名
+        run: |
+          ls
+          cd ./openwrt/
+          grep -R "PKG_CONFIG_OPTION:=" ./package
+        
+      - name: 更新软件包
+        run: |
+          ls
+          cd ./openwrt
+          ls
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+
+      
       - name: Setup Debug Session
         uses: csexton/debugger-action@master
+
+      - name: 复制更新后的文件
+        run: |
+          ls
+          mkdir -p firmware
+          ls
+          cp -r openwrt firmware/
+          tar -czvf openwrt-files.zip firmware/
+      - name: 上传下载
+        uses: actions/upload-artifact@v2
+        with:
+          name: firmware
+          path: openwrt-files.zip
